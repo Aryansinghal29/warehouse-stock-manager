@@ -12,23 +12,24 @@ const userSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
   name: { type: String, required: true, trim: true },
-}, { timestamps: true });
-
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
-});
-
-userSchema.methods.comparePassword = function (candidate: string) {
-  return bcrypt.compare(candidate, this.password);
-};
-
-userSchema.set('toJSON', {
-  transform: (_doc, ret) => {
-    delete ret.password;
-    return ret;
+}, {
+  timestamps: true,
+  toJSON: {
+    transform(_doc, ret) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ret as any).password = undefined;
+      return ret;
+    },
   },
 });
+
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 12);
+});
+
+userSchema.methods.comparePassword = function (candidate: string): Promise<boolean> {
+  return bcrypt.compare(candidate, this.password as string);
+};
 
 export default mongoose.model<IUser>('User', userSchema);
