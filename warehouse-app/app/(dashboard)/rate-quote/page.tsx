@@ -45,16 +45,14 @@ export default function RateQuotePage() {
   };
 
   return (
-    <div className="max-w-4xl">
-      <h2 className="text-2xl font-bold text-slate-800 mb-1">Rate & Routing Calculator</h2>
-      <p className="text-slate-500 text-sm mb-6">
-        Computes delivery cost using volumetric weight and optimal vehicle assignment.
-      </p>
+    <div>
+      <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-1">Rate & Routing Calculator</h2>
+      <p className="text-slate-500 text-sm mb-5">Computes delivery cost using volumetric weight and optimal vehicle assignment.</p>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-5">
 
-        {/* Route */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Route — stacked on mobile, side by side on desktop */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
             Origin Pincode
             <select className="input" value={origin} onChange={e => setOrigin(e.target.value)}>
@@ -71,68 +69,73 @@ export default function RateQuotePage() {
 
         {/* Items */}
         <div>
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-3">
             <span className="text-sm font-semibold text-slate-700">Shipment Items</span>
             <button type="button" onClick={() => setItems(i => [...i, emptyItem()])} className="btn-secondary text-xs">
               + Add Item
             </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
-                <tr>
-                  {['SKU', 'Qty', 'Weight (kg)', 'L (cm)', 'W (cm)', 'H (cm)', ''].map(h => (
-                    <th key={h} className="px-3 py-2 text-left">{h}</th>
+          <div className="flex flex-col gap-3">
+            {items.map((item, i) => (
+              <div key={i} className="border border-slate-100 rounded-lg p-3 bg-slate-50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase">Item {i + 1}</span>
+                  {items.length > 1 && (
+                    <button type="button" onClick={() => setItems(ls => ls.filter((_, idx) => idx !== i))}
+                      className="text-red-400 hover:text-red-600 text-sm">Remove</button>
+                  )}
+                </div>
+                {/* SKU + Qty row */}
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                    SKU
+                    <input className="input text-sm" type="text" value={item.sku}
+                      onChange={e => updateItem(i, 'sku', e.target.value)} placeholder="e.g. PROD-01" required />
+                  </label>
+                  <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                    Quantity
+                    <input className="input text-sm" type="number" min={1} value={item.quantity}
+                      onChange={e => updateItem(i, 'quantity', Number(e.target.value))} required />
+                  </label>
+                </div>
+                {/* Dimensions row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {([
+                    { label: 'Weight (kg)', field: 'weightKg' },
+                    { label: 'Length (cm)', field: 'lengthCm' },
+                    { label: 'Width (cm)', field: 'widthCm' },
+                    { label: 'Height (cm)', field: 'heightCm' },
+                  ] as const).map(({ label, field }) => (
+                    <label key={field} className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                      {label}
+                      <input className="input text-sm" type="number" min={0.1} step={0.1} value={item[field]}
+                        onChange={e => updateItem(i, field, Number(e.target.value))} required />
+                    </label>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((item, i) => (
-                  <tr key={i} className="border-t border-slate-100">
-                    {(['sku', 'quantity', 'weightKg', 'lengthCm', 'widthCm', 'heightCm'] as const).map(field => (
-                      <td key={field} className="px-2 py-1">
-                        <input
-                          className="input text-xs"
-                          type={field === 'sku' ? 'text' : 'number'}
-                          min={field === 'sku' ? undefined : 0.1}
-                          step={field === 'sku' ? undefined : 0.1}
-                          value={item[field]}
-                          onChange={e => updateItem(i, field, field === 'sku' ? e.target.value : Number(e.target.value))}
-                          required
-                        />
-                      </td>
-                    ))}
-                    <td className="px-2 py-1">
-                      {items.length > 1 && (
-                        <button type="button" onClick={() => setItems(ls => ls.filter((_, idx) => idx !== i))}
-                          className="text-red-400 hover:text-red-600">✕</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
 
-        <button type="submit" className="btn-primary self-start" disabled={loading}>
+        <button type="submit" className="btn-primary w-full sm:w-auto sm:self-start" disabled={loading}>
           {loading ? 'Calculating...' : 'Get Rate Quote'}
         </button>
       </form>
 
       {/* Result */}
       {quote && (
-        <div className="mt-6 bg-white rounded-xl shadow-sm p-6 flex flex-col gap-4">
+        <div className="mt-5 bg-white rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-slate-800">Quote Result</h3>
             <span className="text-2xl font-bold text-emerald-600">₹{quote.totalCost.toLocaleString()}</span>
           </div>
 
-          {/* Route info */}
-          <div className="grid grid-cols-3 gap-3 text-sm">
+          {/* Route info — 1 col mobile, 3 col desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="bg-slate-50 rounded-lg p-3">
               <div className="text-slate-400 text-xs uppercase mb-1">Route</div>
               <div className="font-medium">{quote.originZone} → {quote.destinationZone}</div>
@@ -143,7 +146,7 @@ export default function RateQuotePage() {
               <div className="font-medium">₹{quote.ratePerKg}/kg</div>
             </div>
             <div className="bg-slate-50 rounded-lg p-3">
-              <div className="text-slate-400 text-xs uppercase mb-1">Vehicles</div>
+              <div className="text-slate-400 text-xs uppercase mb-1">Vehicles Used</div>
               <div className="font-medium">{quote.vehicles.length} vehicle(s)</div>
             </div>
           </div>
@@ -155,12 +158,13 @@ export default function RateQuotePage() {
               {quote.vehicles.map((v, i) => (
                 <div key={i} className="border border-slate-100 rounded-lg p-3 text-sm">
                   <div className="flex justify-between items-center mb-1">
-                    <span className="font-medium">🚚 {v.vehicleType} <span className="text-slate-400 text-xs">(cap: {v.capacityKg}kg)</span></span>
+                    <span className="font-medium">🚚 {v.vehicleType}
+                      <span className="text-slate-400 text-xs ml-1">(cap: {v.capacityKg}kg)</span>
+                    </span>
                     <span className="font-semibold text-slate-700">₹{v.cost.toLocaleString()}</span>
                   </div>
                   <div className="text-slate-500 text-xs">
-                    Chargeable: {v.totalChargeableKg}kg ·{' '}
-                    {[...new Set(v.items.map(it => it.sku))].join(', ')}
+                    Chargeable: {v.totalChargeableKg}kg · {[...new Set(v.items.map(it => it.sku))].join(', ')}
                   </div>
                 </div>
               ))}
@@ -170,7 +174,7 @@ export default function RateQuotePage() {
           {/* Justification */}
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
             <div className="text-xs font-semibold text-blue-700 uppercase mb-1">How this was chosen</div>
-            <p className="text-sm text-blue-800">{quote.justification}</p>
+            <p className="text-sm text-blue-800 leading-relaxed">{quote.justification}</p>
           </div>
         </div>
       )}

@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   description: 'Inventory management with order fulfillment',
 };
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>

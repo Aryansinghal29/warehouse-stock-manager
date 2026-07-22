@@ -26,7 +26,7 @@ export default function SignInPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-md w-full max-w-sm flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8 rounded-xl shadow-md w-full max-w-sm mx-4 flex flex-col gap-4">
       <h2 className="text-2xl font-bold text-slate-800">Sign In</h2>
       {error && <p className="text-red-500 text-sm bg-red-50 p-2 rounded">{error}</p>}
       <input className="input" type="email" placeholder="Email" value={form.email}
