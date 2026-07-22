@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import { connectDB } from '@/lib/db';
-import Product from '@/lib/models/Product';
+import Product, { IProduct } from '@/lib/models/Product';
 import Order, { IOrderItem, ItemStatus } from '@/lib/models/Order';
 import { getUserId } from '@/lib/auth';
 
@@ -25,11 +25,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'At least one item required' }, { status: 400 });
     }
 
+    // Validate all inputs upfront before touching DB
     for (const item of items) {
-      if (!item.sku?.trim()) return NextResponse.json({ message: 'SKU is required for each item' }, { status: 400 });
-      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
-        return NextResponse.json({ message: `Quantity for ${item.sku} must be at least 1` }, { status: 400 });
+      if (!item.sku?.trim()) {
+        return NextResponse.json({ message: 'SKU is required for each item' }, { status: 400 });
       }
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        return NextResponse.json({ message: `Quantity for "${item.sku}" must be a positive integer` }, { status: 400 });
+      }
+    }
+
+    // Check for duplicate SKUs in the same order
+    const skus = items.map(i => i.sku.toUpperCase().trim());
+    if (new Set(skus).size !== skus.length) {
+      return NextResponse.json({ message: 'Duplicate SKUs in order — combine them into one line' }, { status: 400 });
     }
 
     await connectDB();
@@ -39,29 +48,71 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const sku = item.sku.toUpperCase().trim();
 
-      // Atomic findOneAndUpdate — deducts only what's available, prevents overselling
-      // $inc with negative value is atomic in MongoDB even without transactions
-      const product = await Product.findOne({ sku, userId });
-      if (!product) {
+      // Verify product exists first
+      const exists = await Product.findOne({ sku, userId }).lean();
+      if (!exists) {
         return NextResponse.json({ message: `SKU "${sku}" not found` }, { status: 404 });
       }
 
-      const canFulfill = Math.min(product.quantity, item.quantity);
+      const currentQty = (exists as IProduct).quantity;
+      const canFulfill = Math.min(currentQty, item.quantity);
       const backordered = item.quantity - canFulfill;
 
-      // Atomic decrement — only deduct what we can fulfill
-      await Product.findOneAndUpdate(
-        { sku, userId, quantity: { $gte: canFulfill } },
-        { $inc: { quantity: -canFulfill } }
-      );
+      if (canFulfill > 0) {
+        /**
+         * ATOMIC OPERATION — single findOneAndUpdate with $inc.
+         * MongoDB document-level locking ensures two concurrent requests
+         * for the same SKU cannot both read the same quantity and both
+         * deduct the full amount (no overselling).
+         *
+         * The quantity: { $gte: canFulfill } guard ensures we never
+         * go below zero even if stock changed between the lean read above
+         * and this update (optimistic concurrency check).
+         */
+        const updated = await Product.findOneAndUpdate(
+          { sku, userId, quantity: { $gte: canFulfill } },
+          { $inc: { quantity: -canFulfill } },
+          { new: true }
+        );
+
+        // If updated is null, stock changed between our read and update
+        // (another concurrent request won the race) — recalculate
+        if (!updated) {
+          const fresh = await Product.findOne({ sku, userId }).lean() as IProduct | null;
+          const freshQty = fresh?.quantity ?? 0;
+          const actualFulfill = Math.min(freshQty, item.quantity);
+          const actualBackordered = item.quantity - actualFulfill;
+
+          if (actualFulfill > 0) {
+            await Product.findOneAndUpdate(
+              { sku, userId, quantity: { $gte: actualFulfill } },
+              { $inc: { quantity: -actualFulfill } }
+            );
+          }
+
+          const itemStatus: ItemStatus =
+            actualFulfill === 0 ? 'backordered' :
+            actualBackordered > 0 ? 'partial' : 'fulfilled';
+
+          orderItems.push({
+            productId: (exists as IProduct & { _id: mongoose.Types.ObjectId })._id,
+            sku,
+            requested: item.quantity,
+            fulfilled: actualFulfill,
+            backordered: actualBackordered,
+            status: itemStatus,
+          });
+          continue;
+        }
+      }
 
       const itemStatus: ItemStatus =
         canFulfill === 0 ? 'backordered' :
         backordered > 0 ? 'partial' : 'fulfilled';
 
       orderItems.push({
-        productId: product._id as mongoose.Types.ObjectId,
-        sku: product.sku,
+        productId: (exists as IProduct & { _id: mongoose.Types.ObjectId })._id,
+        sku,
         requested: item.quantity,
         fulfilled: canFulfill,
         backordered,
