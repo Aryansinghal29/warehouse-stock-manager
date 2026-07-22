@@ -21,6 +21,7 @@ export default function Navbar() {
         <Link href="/dashboard" className="text-slate-300 hover:text-white text-sm">Dashboard</Link>
         <Link href="/products" className="text-slate-300 hover:text-white text-sm">Products</Link>
         <Link href="/orders" className="text-slate-300 hover:text-white text-sm">Orders</Link>
+        <Link href="/rate-quote" className="text-slate-300 hover:text-white text-sm">Rate Quote</Link>
         <span className="text-slate-500 text-sm">Hi, {user?.name}</span>
         <button
           onClick={handleSignout}

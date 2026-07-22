@@ -31,7 +31,13 @@ A full-stack inventory management app built with Next.js (App Router), MongoDB, 
 - Dashboard with low-stock alerts (items at or below threshold), stat cards
 - Loading states and error states throughout the UI
 
-### Tier 2 — Order Fulfillment
+### Tier 3 — Rate & Routing Engine
+- Zone-rate matrix based on pincode prefix (10 cities, 4 zones: North/South/East/West)
+- Volumetric weight: `(L × W × H) / 5000` vs actual weight — whichever is higher is charged
+- Vehicle capacity constraint: Bike (20kg), Mini Van (200kg), Truck (1000kg), Heavy Truck (5000kg)
+- Greedy bin-packing: picks smallest vehicle that fits load; splits across multiple vehicles if needed
+- Returns total cost + per-vehicle breakdown + plain-English justification of how the option was chosen
+
 - Place orders with multiple SKUs in one request
 - **Atomic stock deduction** — uses MongoDB `$inc` with conditional update to prevent overselling under concurrent load
 - **Partial fulfillment** — fulfills what's available, marks remainder as `backordered`

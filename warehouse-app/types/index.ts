@@ -33,3 +33,32 @@ export interface Order {
 export interface ApiError {
   message?: string;
 }
+
+// Tier 3 — Rate & Routing Engine
+export interface ShipmentItem {
+  sku: string;
+  quantity: number;
+  weightKg: number;       // actual weight per unit
+  lengthCm: number;
+  widthCm: number;
+  heightCm: number;
+}
+
+export interface VehicleLoad {
+  vehicleType: string;
+  capacityKg: number;
+  items: ShipmentItem[];
+  totalChargeableKg: number;
+  cost: number;
+}
+
+export interface RateQuote {
+  originPincode: string;
+  destinationPincode: string;
+  originZone: string;
+  destinationZone: string;
+  ratePerKg: number;
+  vehicles: VehicleLoad[];
+  totalCost: number;
+  justification: string;
+}
