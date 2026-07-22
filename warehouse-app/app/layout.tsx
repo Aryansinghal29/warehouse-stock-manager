@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import SessionWrapper from '@/components/SessionWrapper';
 
 const geist = Geist({ subsets: ['latin'] });
 
@@ -19,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={geist.className} suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <SessionWrapper><AuthProvider>{children}</AuthProvider></SessionWrapper>
       </body>
     </html>
   );

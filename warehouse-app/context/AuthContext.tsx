@@ -8,6 +8,7 @@ interface AuthCtx {
   signin: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   signout: () => void;
+  persist: (t: string, u: User) => void;
 }
 
 const AuthContext = createContext<AuthCtx | null>(null);
@@ -34,12 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (storedUser) setUser(JSON.parse(storedUser) as User);
   }, []);
 
-  const persist = (t: string, u: User) => {
+  const persist = useCallback((t: string, u: User) => {
     localStorage.setItem('token', t);
     localStorage.setItem('user', JSON.stringify(u));
     setToken(t);
     setUser(u);
-  };
+  }, []);
 
   const signup = useCallback(async (name: string, email: string, password: string) => {
     const data = await apiFetch<{ token: string; user: User }>('/api/auth/signup', { name, email, password });
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, signin, signup, signout }}>
+    <AuthContext.Provider value={{ user, token, signin, signup, signout, persist }}>
       {children}
     </AuthContext.Provider>
   );
