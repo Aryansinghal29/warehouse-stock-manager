@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/components/Navbar';
@@ -7,11 +7,17 @@ import Navbar from '@/components/Navbar';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { token } = useAuth();
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!token) router.replace('/signin');
-  }, [token, router]);
+    setMounted(true);
+  }, []);
 
+  useEffect(() => {
+    if (mounted && !token) router.replace('/signin');
+  }, [token, router, mounted]);
+
+  if (!mounted) return null;
   if (!token) return null;
 
   return (

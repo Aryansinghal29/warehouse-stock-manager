@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { User } from '@/types';
 
 interface AuthCtx {
@@ -24,14 +24,15 @@ async function apiFetch<T>(path: string, body: object): Promise<T> {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const s = localStorage.getItem('user');
-    return s ? (JSON.parse(s) as User) : null;
-  });
-  const [token, setToken] = useState<string | null>(() =>
-    typeof window !== 'undefined' ? localStorage.getItem('token') : null
-  );
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (storedToken) setToken(storedToken);
+    if (storedUser) setUser(JSON.parse(storedUser) as User);
+  }, []);
 
   const persist = (t: string, u: User) => {
     localStorage.setItem('token', t);
