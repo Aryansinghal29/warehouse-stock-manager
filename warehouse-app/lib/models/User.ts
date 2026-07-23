@@ -16,7 +16,6 @@ const userSchema = new Schema<IUser>({
   timestamps: true,
   toJSON: {
     transform(_doc, ret) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (ret as any).password = undefined;
       return ret;
     },

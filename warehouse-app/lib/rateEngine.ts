@@ -1,17 +1,3 @@
-/**
- * Tier 3 — Rate & Routing Engine
- *
- * Responsibilities:
- *  1. Map pincodes → zones
- *  2. Look up rate per kg from zone-rate matrix
- *  3. Compute chargeable weight (max of actual vs volumetric)
- *  4. Split shipment across vehicles if total exceeds one vehicle's capacity
- *  5. Return cheapest viable option with justification
- */
-
-// ---------------------------------------------------------------------------
-// Zone definitions — pincode prefix → zone
-// ---------------------------------------------------------------------------
 const PINCODE_ZONES: Record<string, string> = {
   '110': 'North',  // Delhi
   '400': 'West',   // Mumbai
@@ -25,9 +11,6 @@ const PINCODE_ZONES: Record<string, string> = {
   '800': 'East',   // Patna
 };
 
-// ---------------------------------------------------------------------------
-// Zone-rate matrix — cost per kg (INR) between zone pairs
-// ---------------------------------------------------------------------------
 const ZONE_RATE_MATRIX: Record<string, Record<string, number>> = {
   North: { North: 10, South: 18, East: 15, West: 14 },
   South: { North: 18, South: 10, East: 17, West: 16 },
@@ -35,9 +18,6 @@ const ZONE_RATE_MATRIX: Record<string, Record<string, number>> = {
   West:  { North: 14, South: 16, East: 19, West: 10 },
 };
 
-// ---------------------------------------------------------------------------
-// Vehicle types — sorted by capacity ascending (cheapest-first strategy)
-// ---------------------------------------------------------------------------
 export const VEHICLE_TYPES = [
   { type: 'Bike',       capacityKg: 20,   baseCost: 0 },
   { type: 'Mini Van',   capacityKg: 200,  baseCost: 0 },
@@ -45,12 +25,8 @@ export const VEHICLE_TYPES = [
   { type: 'Heavy Truck',capacityKg: 5000, baseCost: 0 },
 ] as const;
 
-// DIM factor: industry standard is 5000 cm³/kg
 const DIM_FACTOR = 5000;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 export function getZone(pincode: string): string | null {
   const prefix = pincode.slice(0, 3);
   return PINCODE_ZONES[prefix] ?? null;
@@ -60,7 +36,6 @@ export function getRate(originZone: string, destZone: string): number | null {
   return ZONE_RATE_MATRIX[originZone]?.[destZone] ?? null;
 }
 
-/** Chargeable weight = max(actual weight, volumetric weight) */
 export function chargeableWeight(
   actualKg: number,
   lengthCm: number,
@@ -99,16 +74,6 @@ export interface RateQuoteResult {
   justification: string;
 }
 
-/**
- * Core engine — computes cheapest delivery option.
- *
- * Strategy:
- *  - Expand items by quantity into individual units
- *  - Compute chargeable weight per unit
- *  - Greedily pack into smallest vehicle that fits remaining load
- *  - If no single vehicle fits, use largest vehicle repeatedly
- *  - Total cost = sum of (vehicle chargeable kg × rate per kg)
- */
 export function computeRateQuote(
   originPincode: string,
   destinationPincode: string,

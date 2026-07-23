@@ -25,7 +25,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'At least one item required' }, { status: 400 });
     }
 
-    // Validate all inputs upfront before touching DB
     for (const item of items) {
       if (!item.sku?.trim()) {
         return NextResponse.json({ message: 'SKU is required for each item' }, { status: 400 });
@@ -35,7 +34,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Check for duplicate SKUs in the same order
     const skus = items.map(i => i.sku.toUpperCase().trim());
     if (new Set(skus).size !== skus.length) {
       return NextResponse.json({ message: 'Duplicate SKUs in order — combine them into one line' }, { status: 400 });
@@ -48,7 +46,6 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const sku = item.sku.toUpperCase().trim();
 
-      // Verify product exists first
       const exists = await Product.findOne({ sku, userId }).lean();
       if (!exists) {
         return NextResponse.json({ message: `SKU "${sku}" not found` }, { status: 404 });
@@ -59,24 +56,12 @@ export async function POST(req: NextRequest) {
       const backordered = item.quantity - canFulfill;
 
       if (canFulfill > 0) {
-        /**
-         * ATOMIC OPERATION — single findOneAndUpdate with $inc.
-         * MongoDB document-level locking ensures two concurrent requests
-         * for the same SKU cannot both read the same quantity and both
-         * deduct the full amount (no overselling).
-         *
-         * The quantity: { $gte: canFulfill } guard ensures we never
-         * go below zero even if stock changed between the lean read above
-         * and this update (optimistic concurrency check).
-         */
         const updated = await Product.findOneAndUpdate(
           { sku, userId, quantity: { $gte: canFulfill } },
           { $inc: { quantity: -canFulfill } },
           { new: true }
         );
 
-        // If updated is null, stock changed between our read and update
-        // (another concurrent request won the race) — recalculate
         if (!updated) {
           const fresh = await Product.findOne({ sku, userId }).lean() as IProduct | null;
           const freshQty = fresh?.quantity ?? 0;
