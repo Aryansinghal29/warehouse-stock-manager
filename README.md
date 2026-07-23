@@ -1,8 +1,18 @@
 # Warehouse Stock Manager
 
-A full-stack inventory management app with authentication, product CRUD, and concurrency-safe order fulfillment.
+A full-stack inventory management app built with Next.js, MongoDB, and Tailwind CSS.
 
-**Stack:** React + TypeScript (Vite) · Node.js + Express + TypeScript · MongoDB (Mongoose)
+**Live Demo:** `<your-vercel-url>`  
+**Repo:** `<your-github-url>`
+
+---
+
+## Stack
+
+- **Framework:** Next.js 16 (App Router, API Routes) + TypeScript
+- **Database:** MongoDB Atlas (Mongoose)
+- **Auth:** NextAuth.js (credentials + Google OAuth) with bcrypt-hashed passwords
+- **Styling:** Tailwind CSS v4
 
 ---
 
@@ -10,7 +20,7 @@ A full-stack inventory management app with authentication, product CRUD, and con
 
 ### Tier 1 — Foundation
 - Sign up / Sign in with bcrypt-hashed passwords
-- JWT auth with 7-day expiry; token persisted in localStorage
+- JWT-based auth via NextAuth; session persisted across tabs
 - Protected routes — all product/order pages require auth
 - Full CRUD for products: SKU, name, quantity, category, low-stock threshold
 - Dashboard with low-stock alerts (items at or below threshold)
@@ -22,75 +32,70 @@ A full-stack inventory management app with authentication, product CRUD, and con
 - Partial fulfillment: fulfills what's available, marks remainder as backordered
 - Order history / audit log with per-item breakdown
 
+### Tier 3 — Rate Engine
+- Zone-rate matrix across 4 regions (North / South / East / West) mapped by pincode prefix
+- Volumetric weight calculator: `chargeable = max(actualKg, L×W×H / 5000)`
+- Auto vehicle selection (Bike → Mini Van → Truck → Heavy Truck) — smallest vehicle that fits the load
+- Multi-vehicle splitting when total weight exceeds a single vehicle's capacity
+- Full cost justification returned with every quote
+
 ---
 
 ## Setup
 
 ### Prerequisites
 - Node.js 18+
-- MongoDB running locally (`mongodb://localhost:27017`) **or** a MongoDB Atlas URI
+- MongoDB Atlas URI (or local replica set for transactions)
 
-### Backend
-
-```bash
-cd backend
-npm install
-# Edit .env — set MONGO_URI and JWT_SECRET
-npm run dev        # starts on http://localhost:5000
-```
-
-### Frontend
+### Run locally
 
 ```bash
-cd frontend
+cd warehouse-app
 npm install
-# Edit .env — set VITE_API_URL if backend is not on localhost:5000
-npm run dev        # starts on http://localhost:5173
 ```
 
----
+Create `.env.local`:
 
-## Environment Variables
+```env
+MONGO_URI=mongodb+srv://<user>:<password>@cluster0.xxx.mongodb.net/warehouse
+JWT_SECRET=<random-secret>
+NEXTAUTH_SECRET=<random-secret>
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-**backend/.env**
-```
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/warehouse
-JWT_SECRET=change_this_in_production
-CLIENT_URL=http://localhost:5173
+# Optional — Google OAuth
+GOOGLE_CLIENT_ID=<client-id>
+GOOGLE_CLIENT_SECRET=<client-secret>
 ```
 
-**frontend/.env**
-```
-VITE_API_URL=http://localhost:5000/api
+```bash
+npm run dev   # http://localhost:3000
 ```
 
 ---
 
 ## Deployment
 
-| Service | What to deploy |
-|---------|---------------|
-| Vercel / Netlify | `frontend/` — set `VITE_API_URL` to your backend URL |
-| Render / Railway | `backend/` — set all env vars in the dashboard |
-| MongoDB Atlas | Free M0 cluster; paste connection string into `MONGO_URI` |
-
-> For production, set `CLIENT_URL` on the backend to your frontend domain so CORS works correctly.
+| Service | Config |
+|---------|--------|
+| Vercel | Deploy `warehouse-app/`; add all env vars in project settings |
+| MongoDB Atlas | Free M0 cluster; paste URI into `MONGO_URI` |
 
 ---
 
 ## Assumptions & Trade-offs
 
-- **Auth persistence:** JWT stored in localStorage (simple, works across tabs). For higher security, httpOnly cookies would be preferable but require same-domain or careful CORS/cookie config.
-- **Concurrency:** MongoDB multi-document transactions require a replica set. On Atlas this works out of the box; locally you need a replica set or use a single-node replica set (`mongod --replSet rs0`).
-- **SKU uniqueness:** Scoped per user — two users can have the same SKU without conflict.
-- **Partial fulfillment:** Stock is deducted immediately for the fulfilled portion; backordered items are tracked but not auto-fulfilled when stock is replenished (would be a natural Tier 3 extension).
+- **Single Next.js app** — API routes replace a separate Express backend; simpler deployment, same logic.
+- **Auth:** NextAuth with credentials + Google OAuth. Sessions use JWTs. For higher security, httpOnly cookies are preferable but require same-domain config.
+- **Concurrency:** MongoDB multi-document transactions require a replica set. Atlas works out of the box; locally use `mongod --replSet rs0`.
+- **SKU uniqueness:** Scoped per user — two users can share the same SKU without conflict.
+- **Partial fulfillment:** Stock is deducted immediately for the fulfilled portion; backordered items are tracked but not auto-fulfilled on restock (natural Tier 3+ extension).
+- **Rate engine:** Pincode zones are mapped by 3-digit prefix. Only 10 major city prefixes are seeded — unknown pincodes return an error.
 
 ## What I'd Improve With More Time
 
-- Refresh token rotation instead of long-lived JWTs
-- Optimistic UI updates with rollback on error
-- Pagination for products/orders
-- Auto-fulfillment of backorders when stock is restocked
-- Unit tests for the order fulfillment logic (race condition scenarios)
-- Tier 3: zone-rate matrix + volumetric weight calculator
+- Refresh token rotation instead of long-lived sessions
+- Pagination for products and orders
+- Auto-fulfillment of backorders when stock is replenished
+- Unit tests for order fulfillment (race condition scenarios) and the rate engine
+- Broader pincode coverage in the zone matrix
