@@ -2,8 +2,8 @@
 
 A full-stack inventory management app built with Next.js, MongoDB, and Tailwind CSS.
 
-**Live Demo:** `<your-vercel-url>`  
-**Repo:** `<your-github-url>`
+**Live Demo:** `<https://warehouse-app-dusky.vercel.app/signup>`  
+**Repo:** `<https://github.com/Aryansinghal29/warehouse-stock-manager>`
 
 ---
 
