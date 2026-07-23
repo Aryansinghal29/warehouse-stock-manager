@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { signOut } from 'next-auth/react';
 import { useAuth } from '@/context/AuthContext';
 
 const NAV_LINKS = [
@@ -17,9 +18,10 @@ export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const handleSignout = () => {
+  const handleSignout = async () => {
     signout();
-    router.push('/signin');
+    await signOut({ redirect: false });
+    router.replace('/signin');
   };
 
   return (
