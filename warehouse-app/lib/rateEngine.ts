@@ -88,7 +88,6 @@ export function computeRateQuote(
   const ratePerKg = getRate(originZone, destZone);
   if (ratePerKg === null) throw new Error(`No rate found for ${originZone} → ${destZone}`);
 
-  // Expand items into units with individual chargeable weights
   const units: { sku: string; chargeableKg: number; source: ShipmentInput }[] = [];
   for (const item of items) {
     const cw = chargeableWeight(item.weightKg, item.lengthCm, item.widthCm, item.heightCm);
@@ -99,7 +98,6 @@ export function computeRateQuote(
 
   const totalChargeableKg = units.reduce((s, u) => s + u.chargeableKg, 0);
 
-  // Sort vehicles ascending by capacity
   const vehicles = [...VEHICLE_TYPES].sort((a, b) => a.capacityKg - b.capacityKg);
   const maxVehicle = vehicles[vehicles.length - 1];
 
@@ -109,11 +107,9 @@ export function computeRateQuote(
   while (remaining.length > 0) {
     const remainingWeight = remaining.reduce((s, u) => s + u.chargeableKg, 0);
 
-    // Pick smallest vehicle that fits all remaining units
     const fit = vehicles.find(v => v.capacityKg >= remainingWeight);
     const chosen = fit ?? maxVehicle;
 
-    // Pack as many units as fit into this vehicle
     const load: typeof remaining = [];
     let loadWeight = 0;
 
@@ -124,7 +120,6 @@ export function computeRateQuote(
       }
     }
 
-    // If nothing fits (single unit > max capacity), force it in
     if (load.length === 0) {
       load.push(remaining[0]);
       loadWeight = remaining[0].chargeableKg;
@@ -146,7 +141,6 @@ export function computeRateQuote(
 
   const totalCost = loads.reduce((s, l) => s + l.cost, 0);
 
-  // Build justification
   const usedTypes = [...new Set(loads.map(l => l.vehicleType))];
   const dimNote = units.some(u => {
     const vol = (u.source.lengthCm * u.source.widthCm * u.source.heightCm) / DIM_FACTOR;

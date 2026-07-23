@@ -14,7 +14,6 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // When Google OAuth completes, grab our app token from session
   useEffect(() => {
     const s = session as typeof session & { appToken?: string; dbUser?: { id: string; name: string; email: string } };
     if (s?.appToken && s?.dbUser) {
@@ -45,9 +44,7 @@ export default function SignInPage() {
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-sm">
-        {/* Card */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl">
-          {/* Header */}
           <div className="text-center mb-6">
             <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,14 +85,12 @@ export default function SignInPage() {
             </button>
           </form>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 my-4">
             <div className="flex-1 h-px bg-white/20" />
             <span className="text-white/40 text-xs">or</span>
             <div className="flex-1 h-px bg-white/20" />
           </div>
 
-          {/* Google Button */}
           <button
             onClick={handleGoogle}
             disabled={googleLoading}

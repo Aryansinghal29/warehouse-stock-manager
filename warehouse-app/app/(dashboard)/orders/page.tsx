@@ -55,7 +55,6 @@ export default function OrdersPage() {
         <button onClick={() => { setError(''); setShowModal(true); }} className="btn-primary">+ Place Order</button>
       </div>
 
-      {/* Modal — bottom sheet on mobile, centered on desktop */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
           <form onSubmit={handleSubmit}
@@ -103,7 +102,6 @@ export default function OrdersPage() {
         <div className="flex flex-col gap-4">
           {orders.map(order => (
             <div key={order._id} className="bg-white rounded-xl shadow-sm overflow-hidden">
-              {/* Order header */}
               <div className="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-100">
                 <span className="font-mono text-xs text-slate-500">#{order._id.slice(-8)}</span>
                 <Badge label={order.status} />
@@ -112,7 +110,6 @@ export default function OrdersPage() {
                 </span>
               </div>
 
-              {/* Mobile: stacked item cards */}
               <div className="sm:hidden divide-y divide-slate-100">
                 {order.items.map((item, i) => (
                   <div key={i} className="px-4 py-3 flex items-center justify-between">
@@ -127,7 +124,6 @@ export default function OrdersPage() {
                 ))}
               </div>
 
-              {/* Desktop: table */}
               <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-slate-400 uppercase text-xs bg-white">

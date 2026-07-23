@@ -1,14 +1,12 @@
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-slate-900">
-      {/* Animated gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse" />
         <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Warehouse grid pattern */}
       <div
         className="absolute inset-0 opacity-[0.07] pointer-events-none"
         style={{
@@ -20,7 +18,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         }}
       />
 
-      {/* Floating warehouse icons */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {[
           { top: '10%', left: '8%', size: 'text-4xl', opacity: 'opacity-10', delay: '0s' },
@@ -40,7 +37,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         ))}
       </div>
 
-      {/* Branding top */}
       <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">W</div>
         <span className="text-white/70 font-semibold tracking-wide text-sm">Warehouse Manager</span>

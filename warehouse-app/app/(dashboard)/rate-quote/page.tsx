@@ -51,7 +51,6 @@ export default function RateQuotePage() {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-5">
 
-        {/* Route — stacked on mobile, side by side on desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
             Origin Pincode
@@ -86,7 +85,6 @@ export default function RateQuotePage() {
                       className="text-red-400 hover:text-red-600 text-sm">Remove</button>
                   )}
                 </div>
-                {/* SKU + Qty row */}
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
                     SKU
@@ -99,7 +97,6 @@ export default function RateQuotePage() {
                       onChange={e => updateItem(i, 'quantity', Number(e.target.value))} required />
                   </label>
                 </div>
-                {/* Dimensions row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {([
                     { label: 'Weight (kg)', field: 'weightKg' },
@@ -126,7 +123,6 @@ export default function RateQuotePage() {
         </button>
       </form>
 
-      {/* Result */}
       {quote && (
         <div className="mt-5 bg-white rounded-xl shadow-sm p-4 sm:p-6 flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -134,7 +130,6 @@ export default function RateQuotePage() {
             <span className="text-2xl font-bold text-emerald-600">₹{quote.totalCost.toLocaleString()}</span>
           </div>
 
-          {/* Route info — 1 col mobile, 3 col desktop */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="bg-slate-50 rounded-lg p-3">
               <div className="text-slate-400 text-xs uppercase mb-1">Route</div>

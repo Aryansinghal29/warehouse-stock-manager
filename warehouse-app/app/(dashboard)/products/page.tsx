@@ -67,7 +67,6 @@ export default function ProductsPage() {
         <button onClick={openAdd} className="btn-primary">+ Add Product</button>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
           <form onSubmit={handleSubmit}
@@ -104,7 +103,6 @@ export default function ProductsPage() {
         </div>
       ) : (
         <>
-          {/* Mobile cards */}
           <div className="sm:hidden flex flex-col gap-3">
             {products.map(p => (
               <div key={p._id} className="bg-white rounded-xl shadow-sm p-4">
@@ -131,7 +129,6 @@ export default function ProductsPage() {
             ))}
           </div>
 
-          {/* Desktop table */}
           <div className="hidden sm:block bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

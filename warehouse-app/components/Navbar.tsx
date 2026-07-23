@@ -25,12 +25,10 @@ export default function Navbar() {
   return (
     <nav className="bg-slate-800 text-slate-100">
       <div className="px-4 sm:px-6 py-3 flex items-center justify-between">
-        {/* Brand */}
         <Link href="/dashboard" className="font-bold text-lg text-white no-underline">
           📦 Warehouse
         </Link>
 
-        {/* Desktop links */}
         <div className="hidden md:flex items-center gap-5">
           {NAV_LINKS.map(l => (
             <Link key={l.href} href={l.href}
@@ -45,7 +43,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Mobile hamburger */}
         <button className="md:hidden flex flex-col gap-1.5 p-1" onClick={() => setOpen(o => !o)} aria-label="Toggle menu">
           <span className={`block w-6 h-0.5 bg-slate-300 transition-transform duration-200 ${open ? 'rotate-45 translate-y-2' : ''}`} />
           <span className={`block w-6 h-0.5 bg-slate-300 transition-opacity duration-200 ${open ? 'opacity-0' : ''}`} />
@@ -53,7 +50,6 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t border-slate-700 px-4 py-3 flex flex-col gap-1">
           {NAV_LINKS.map(l => (

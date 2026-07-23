@@ -45,7 +45,6 @@ export default function SignUpPage() {
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="w-full max-w-sm">
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-8 shadow-2xl">
-          {/* Header */}
           <div className="text-center mb-6">
             <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/30">
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

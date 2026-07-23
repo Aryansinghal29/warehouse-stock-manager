@@ -25,7 +25,6 @@ export default function DashboardPage() {
     <div>
       <h2 className="text-xl sm:text-2xl font-bold text-slate-800 mb-5">Dashboard</h2>
 
-      {/* Stat cards — 1 col mobile, 3 col desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         {[
           { label: 'Total Products', value: products.length, color: 'border-blue-500', bg: 'bg-blue-50', text: 'text-blue-600' },
@@ -51,7 +50,6 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          {/* Mobile cards */}
           <div className="sm:hidden divide-y divide-slate-100">
             {lowStock.map(p => (
               <div key={p._id} className="p-4 flex items-center justify-between gap-3">
@@ -67,7 +65,6 @@ export default function DashboardPage() {
               </div>
             ))}
           </div>
-          {/* Desktop table */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
